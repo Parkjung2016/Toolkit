@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 
-namespace PJH.Utility.CustomDebug
+namespace PJH.Toolkit.CustomDebug
 {
     public struct ReplaceMode
     {

@@ -4,7 +4,7 @@ using UnityEditor.Build;
 using System.Linq;
 using UnityEngine;
 
-namespace PJH.Utility.Editor
+namespace PJH.Toolkit.Editor
 {
     [InitializeOnLoad]
     public static class PJHDebugToggle

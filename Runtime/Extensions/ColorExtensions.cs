@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace PJH.Utility.Extensions
+namespace PJH.Toolkit.Extensions
 {
     public static class ColorExtensions
     {

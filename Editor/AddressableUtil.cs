@@ -1,5 +1,5 @@
 ﻿
-namespace PJH.Utility.Editor
+namespace PJH.Toolkit.Editor
 {
     using UnityEngine;
     using UnityEditor;

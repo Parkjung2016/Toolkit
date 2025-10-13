@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace PJH.Utility.Utils.CoroutineHelpers
+namespace PJH.Toolkit.Utils.CoroutineHelpers
 {
     public static class WaitFor
     {

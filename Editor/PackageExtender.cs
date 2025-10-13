@@ -2,10 +2,10 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace PJH.Utility.Editor
+namespace PJH.Toolkit.Editor
 {
     [InitializeOnLoad]
-    public class BasicTemplateToolbarExtender : UnityEditor.Editor
+    public class PackageExtender : UnityEditor.Editor
     {
         private const string UnitaskName = "com.cysharp.unitask";
         private const string ImprovedTimerName = "com.gitamend.improvedtimers";
@@ -16,7 +16,7 @@ namespace PJH.Utility.Editor
         private const string ImprovedTimerUrl =
             "https://github.com/adammyhre/Unity-Improved-Timers.git";
 
-        static BasicTemplateToolbarExtender()
+        static PackageExtender()
         {
             bool checkUnitaskInstalled = CheckPackageInstalled(UnitaskName);
             if (!checkUnitaskInstalled)

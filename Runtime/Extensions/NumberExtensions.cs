@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace PJH.Utility.Extensions
+namespace PJH.Toolkit.Extensions
 {
     public static class NumberExtensions {
         public static float PercentageOf(this int part, int whole) {

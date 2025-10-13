@@ -1,4 +1,4 @@
-﻿namespace PJH.Utility.Extensions
+﻿namespace PJH.Toolkit.Extensions
 {
 public static class MathfExtension {
         #region Min

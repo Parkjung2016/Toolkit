@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
 
-namespace PJH.Utility.Editor
+namespace PJH.Toolkit.Editor
 {
     // --- 콘솔 클릭 시 커스텀 로그 위치로 이동 ---
     public class PJHDebugRedirect : AssetPostprocessor

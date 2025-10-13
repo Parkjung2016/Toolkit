@@ -1,7 +1,7 @@
-﻿using PJH.Utility.Utils;
+﻿using PJH.Toolkit.Utils;
 using UnityEngine;
 
-namespace PJH.Utility.Extensions
+namespace PJH.Toolkit.Extensions
 {
     public static class ComponentExtensions
     {

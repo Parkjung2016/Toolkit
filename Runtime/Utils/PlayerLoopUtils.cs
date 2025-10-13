@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.LowLevel;
-namespace PJH.Utility.Utils
+namespace PJH.Toolkit.Utils
 {
  public static class PlayerLoopUtils {
         // Remove a system from the player loop

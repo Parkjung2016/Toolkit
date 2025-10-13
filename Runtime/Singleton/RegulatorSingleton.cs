@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace PJH.Utility.Singleton
+namespace PJH.Toolkit.Singleton
 {
     /// <summary>
     /// Unity 씬이 바뀌어도 파괴되지 않고 유지되는 싱글톤-나중에 생긴 인스턴스만 유지합니다.

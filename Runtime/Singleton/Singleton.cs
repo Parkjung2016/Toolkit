@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace PJH.Utility.Singleton
+namespace PJH.Toolkit.Singleton
 {
     /// <summary>
     /// 기본적인 싱글톤 - 씬 전환 시 파괴됩니다.

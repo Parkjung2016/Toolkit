@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PJH.Utility.Extensions
+namespace PJH.Toolkit.Extensions
 {
     public static class EnumeratorExtensions
     {

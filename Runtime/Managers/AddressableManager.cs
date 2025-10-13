@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using PJH.Utility.CustomDebug;
-using PJH.Utility.Extensions;
+using PJH.Toolkit.CustomDebug;
+using PJH.Toolkit.Extensions;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -10,7 +10,7 @@ using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace PJH.Utility.Managers
+namespace PJH.Toolkit.Managers
 {
     public struct LoadedResource
     {

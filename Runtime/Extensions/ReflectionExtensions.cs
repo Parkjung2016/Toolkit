@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace PJH.Utility.Extensions
+namespace PJH.Toolkit.Extensions
 {
     public static class ReflectionExtensions
     {

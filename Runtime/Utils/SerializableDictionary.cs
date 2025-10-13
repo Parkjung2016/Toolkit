@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PJH.Utility.Utils
+namespace PJH.Toolkit.Utils
 {
     [Serializable]
     public class SerializableKeyValue<TKey, TValue>

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace PJH.Utility.Extensions
+namespace PJH.Toolkit.Extensions
 {
     public static class QuaternionConversionExtensions {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
