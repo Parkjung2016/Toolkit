@@ -21,12 +21,14 @@ namespace PJH.Utility.Editor
             bool checkUnitaskInstalled = CheckPackageInstalled(UnitaskName);
             if (!checkUnitaskInstalled)
             {
+                Debug.LogWarning("UniTask package not found. Adding it to manifest.json.");
                 AddPackage(UnitaskName, UnitaskUrl);
             }
 
             bool checkImprovedTimerInstalled = CheckPackageInstalled(ImprovedTimerName);
             if (!checkImprovedTimerInstalled)
             {
+                Debug.LogWarning("Improved Timer package not found. Adding it to manifest.json.");
                 AddPackage(ImprovedTimerName, ImprovedTimerUrl);
             }
         }
