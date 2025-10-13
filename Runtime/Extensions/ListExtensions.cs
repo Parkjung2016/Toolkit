@@ -61,5 +61,10 @@ namespace PJH.Utility.Extensions
 
             return list;
         }
+        
+        public static void RefreshWith<T>(this List<T> list, IEnumerable<T> items) {
+            list.Clear();
+            list.AddRange(items);
+        }
     }
 }

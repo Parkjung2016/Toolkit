@@ -8,9 +8,13 @@ namespace PJH.Utility.Editor
     public class BasicTemplateToolbarExtender : UnityEditor.Editor
     {
         private const string UnitaskName = "com.cysharp.unitask";
+        private const string ImprovedTimerName = "com.gitamend.improvedtimers";
 
         private const string UnitaskUrl =
             "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask";
+
+        private const string ImprovedTimerUrl =
+            "https://github.com/adammyhre/Unity-Improved-Timers.git";
 
         static BasicTemplateToolbarExtender()
         {
@@ -18,6 +22,12 @@ namespace PJH.Utility.Editor
             if (!checkUnitaskInstalled)
             {
                 AddPackage(UnitaskName, UnitaskUrl);
+            }
+
+            bool checkImprovedTimerInstalled = CheckPackageInstalled(ImprovedTimerName);
+            if (!checkImprovedTimerInstalled)
+            {
+                AddPackage(ImprovedTimerName, ImprovedTimerUrl);
             }
         }
 
