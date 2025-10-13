@@ -1,6 +1,6 @@
 {
   "name": "com.pjh.toolkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "PJH Toolkit",
   "description": "A collection of utilities, extensions, managers for Unity development.",
   "unity": "2022.1",
