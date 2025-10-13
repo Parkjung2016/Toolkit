@@ -1,5 +1,4 @@
-﻿using PJH.Utility.CustomDebug;
-
+﻿
 namespace PJH.Utility.Editor
 {
     using UnityEngine;
@@ -16,7 +15,7 @@ namespace PJH.Utility.Editor
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
             if (settings == null)
             {
-                PJHDebug.LogColorPart("Addressable Asset Settings not found.", Color.red);
+                Debug.LogError("Addressable Asset Settings not found.");
                 return;
             }
 
@@ -39,7 +38,7 @@ namespace PJH.Utility.Editor
             }
 
             AssetDatabase.SaveAssets();
-            PJHDebug.LogColorPart("Addressable Sprites renamed successfully", Color.green);
+            Debug.Log("Addressable Sprites renamed successfully.");
         }
     }
 }

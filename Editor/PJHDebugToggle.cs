@@ -2,7 +2,7 @@
 using UnityEditor.Build.Reporting;
 using UnityEditor.Build;
 using System.Linq;
-using PJH.Utility.CustomDebug;
+using UnityEngine;
 
 namespace PJH.Utility.Editor
 {
@@ -37,9 +37,9 @@ namespace PJH.Utility.Editor
 
             BuildReport report = BuildPipeline.BuildPlayer(options);
             if (report.summary.result == BuildResult.Succeeded)
-                PJHDebug.Log("빌드 성공");
+                Debug.Log("빌드 성공");
             else
-                PJHDebug.LogError("빌드 실패");
+                Debug.LogError("빌드 실패");
             if (enableLogs != _prevToggle)
                 SetSymbolEnabled(_prevToggle);
         }
@@ -49,7 +49,7 @@ namespace PJH.Utility.Editor
         {
             bool isEnabled = IsSymbolEnabled();
             SetSymbolEnabled(!isEnabled);
-            PJHDebug.Log($"PJHDebug: Logs {(isEnabled ? "disabled" : "enabled")}");
+            Debug.Log($"PJHDebug: Logs {(isEnabled ? "disabled" : "enabled")}");
             AssetDatabase.Refresh();
         }
 
