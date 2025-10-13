@@ -21,14 +21,12 @@ namespace PJH.Utility.Editor
             bool checkUnitaskInstalled = CheckPackageInstalled(UnitaskName);
             if (!checkUnitaskInstalled)
             {
-                Debug.LogWarning("UniTask package not found. Adding it to manifest.json.");
                 AddPackage(UnitaskName, UnitaskUrl);
             }
 
             bool checkImprovedTimerInstalled = CheckPackageInstalled(ImprovedTimerName);
             if (!checkImprovedTimerInstalled)
             {
-                Debug.LogWarning("Improved Timer package not found. Adding it to manifest.json.");
                 AddPackage(ImprovedTimerName, ImprovedTimerUrl);
             }
         }
@@ -44,13 +42,13 @@ namespace PJH.Utility.Editor
             }
 
             string manifestText = File.ReadAllText(manifestPath);
-            if (!manifestText.Contains(UnitaskName))
+            if (!manifestText.Contains(name))
             {
-                Debug.Log($"{UnitaskName} not found in manifest.json");
+                Debug.Log($"{name} not found in manifest.json");
                 var modifiedText = manifestText.Insert(manifestText.IndexOf("dependencies") + 17,
-                    $"\t\"{UnitaskName}\": \"{UnitaskUrl}\",\n");
+                    $"\t\"{name}\": \"{url}\",\n");
                 File.WriteAllText(manifestPath, modifiedText);
-                Debug.Log($"Added {UnitaskName} to manifest.json");
+                Debug.Log($"Added {name} to manifest.json");
             }
 
             UnityEditor.PackageManager.Client.Resolve();
