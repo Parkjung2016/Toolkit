@@ -14,31 +14,29 @@ namespace PJH.Utility.Editor
         [OnOpenAsset(0)]
         static bool OnOpenAsset(int instance, int line)
         {
-            string name = EditorUtility.InstanceIDToObject(instance).name;
-            if (name != nameof(PJHDebug)) return false;
+            string stackTrace = GetStackTrace();
+            if (string.IsNullOrEmpty(stackTrace))
+                return false;
 
-            string stack_trace = GetStackTrace();
-            if (!string.IsNullOrEmpty(stack_trace))
+            MatchCollection matches = Regex.Matches(stackTrace, @"\(at (.+)\)", RegexOptions.IgnoreCase);
+            foreach (Match match in matches)
             {
-                MatchCollection matches = Regex.Matches(stack_trace, @"\(at (.+)\)", RegexOptions.IgnoreCase);
-                foreach (Match match in matches)
+                string pathLine = match.Groups[1].Value.Trim();
+                if (!pathLine.Contains("PJHDebug.cs")) // ✅ PJHDebug.cs 제외
                 {
-                    string pathLine = match.Groups[1].Value.Trim();
-                    if (!pathLine.Contains("PJHDebug.cs")) // ✅ PJHDebug.cs 제외
+                    int split_index = pathLine.LastIndexOf(":");
+                    if (split_index > 0)
                     {
-                        int split_index = pathLine.LastIndexOf(":");
-                        if (split_index > 0)
-                        {
-                            string path = pathLine.Substring(0, split_index);
-                            line = Convert.ToInt32(pathLine.Substring(split_index + 1));
+                        string path = pathLine.Substring(0, split_index);
+                        line = Convert.ToInt32(pathLine.Substring(split_index + 1));
 
-                            string fullPath =
-                                Application.dataPath.Substring(0, Application.dataPath.LastIndexOf("Assets")) + path;
-                            UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(fullPath, line);
-                            return true;
-                        }
+                        string fullPath =
+                            Application.dataPath.Substring(0, Application.dataPath.LastIndexOf("Assets")) + path;
+                        UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(fullPath, line);
+                        return true;
                     }
                 }
+
             }
 
             return false;
@@ -46,38 +44,21 @@ namespace PJH.Utility.Editor
 
         static string GetStackTrace()
         {
-            var assembly_unity_editor = Assembly.GetAssembly(typeof(EditorWindow));
-            if (assembly_unity_editor == null) return null;
+            Assembly unityEditorAssembly = Assembly.GetAssembly(typeof(EditorWindow));
+            if (unityEditorAssembly == null) return null;
 
-            var type_console_window = assembly_unity_editor.GetType("UnityEditor.ConsoleWindow");
-            if (type_console_window == null) return null;
-            var field_console_window =
-                type_console_window.GetField("ms_ConsoleWindow", BindingFlags.Static | BindingFlags.NonPublic);
-            if (field_console_window == null) return null;
-            var instance_console_window = field_console_window.GetValue(null);
-            if (instance_console_window == null) return null;
+            Type consoleWindowType = unityEditorAssembly.GetType("UnityEditor.ConsoleWindow");
+            FieldInfo fieldConsoleWindow = consoleWindowType.GetField("ms_ConsoleWindow", BindingFlags.Static | BindingFlags.NonPublic);
+            object consoleWindowInstance = fieldConsoleWindow?.GetValue(null);
+            if (consoleWindowInstance == null) return null;
 
-            if ((object)EditorWindow.focusedWindow == instance_console_window)
-            {
-                var type_list_view_state = assembly_unity_editor.GetType("UnityEditor.ListViewState");
-                if (type_list_view_state == null) return null;
+            // 현재 포커스된 창이 콘솔이 아닐 때는 무시
+            if (EditorWindow.focusedWindow != consoleWindowInstance)
+                return null;
 
-                var field_list_view =
-                    type_console_window.GetField("m_ListView", BindingFlags.Instance | BindingFlags.NonPublic);
-                if (field_list_view == null) return null;
-
-                var value_list_view = field_list_view.GetValue(instance_console_window);
-                if (value_list_view == null) return null;
-
-                var field_active_text =
-                    type_console_window.GetField("m_ActiveText", BindingFlags.Instance | BindingFlags.NonPublic);
-                if (field_active_text == null) return null;
-
-                string value_active_text = field_active_text.GetValue(instance_console_window).ToString();
-                return value_active_text;
-            }
-
-            return null;
+            FieldInfo fieldActiveText = consoleWindowType.GetField("m_ActiveText", BindingFlags.Instance | BindingFlags.NonPublic);
+            return fieldActiveText?.GetValue(consoleWindowInstance)?.ToString();
         }
+
     }
 }

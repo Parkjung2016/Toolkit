@@ -68,7 +68,7 @@ namespace PJH.Toolkit.CustomDebug
                     color = color ?? Color.white
                 });
             }
-    
+
             private void OnGUI()
             {
                 GUIStyle style = new GUIStyle();
@@ -146,7 +146,8 @@ namespace PJH.Toolkit.CustomDebug
             bool showTimestamp = false, bool showOnScreen = false, float duration = 2f,
             params (string part, Color color, ReplaceMode mode)[] colorInfos)
         {
-            string output = ApplyColors(BuildMessage(message, prefixNumber, tag, showTimestamp), colorInfos);
+            string appliedColorMessage = ApplyColors(message, colorInfos);
+            string output = BuildMessage(appliedColorMessage, prefixNumber, tag, showTimestamp);
             if (showOnScreen)
                 FloatingDebug.Instance.AddMessage(output, Color.white, duration);
             else
@@ -158,7 +159,8 @@ namespace PJH.Toolkit.CustomDebug
             bool showTimestamp = false, bool showOnScreen = false, float duration = 2f,
             params (string part, Color color, ReplaceMode mode)[] colorInfos)
         {
-            string output = ApplyColors(BuildMessage(message, prefixNumber, tag, showTimestamp), colorInfos);
+            string appliedColorMessage = ApplyColors(message, colorInfos);
+            string output = BuildMessage(appliedColorMessage, prefixNumber, tag, showTimestamp);
             if (showOnScreen)
                 FloatingDebug.Instance.AddMessage(output, Color.yellow, duration);
             else
@@ -170,7 +172,8 @@ namespace PJH.Toolkit.CustomDebug
             bool showTimestamp = false, bool showOnScreen = false, float duration = 2f,
             params (string part, Color color, ReplaceMode mode)[] colorInfos)
         {
-            string output = ApplyColors(BuildMessage(message, prefixNumber, tag, showTimestamp), colorInfos);
+            string appliedColorMessage = ApplyColors(message, colorInfos);
+            string output = BuildMessage(appliedColorMessage, prefixNumber, tag, showTimestamp);
             if (showOnScreen)
                 FloatingDebug.Instance.AddMessage(output, Color.red, duration);
             else
