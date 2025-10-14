@@ -1,54 +1,79 @@
 ﻿using System;
-using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.Callbacks;
+using UnityEngine;
 
-namespace PJH.Toolkit.Editor
+namespace PJH.Utility.Editor
 {
     // --- 콘솔 클릭 시 커스텀 로그 위치로 이동 ---
     public class PJHDebugRedirect : AssetPostprocessor
     {
-        [UnityEditor.Callbacks.OnOpenAsset(0)]
-        public static bool OnOpenAsset(int instanceID, int line)
+        [OnOpenAsset(0)]
+        static bool OnOpenAsset(int instance, int line)
         {
-            string stackTrace = GetStackTrace();
-            if (!string.IsNullOrEmpty(stackTrace) && stackTrace.ToLower().Contains("[mark]"))
+            string name = EditorUtility.InstanceIDToObject(instance).name;
+            if (name != nameof(PJHDebug)) return false;
+
+            string stack_trace = GetStackTrace();
+            if (!string.IsNullOrEmpty(stack_trace))
             {
-                Match match = Regex.Match(stackTrace, @"\(at (.+)\)", RegexOptions.IgnoreCase);
-                if (match.Success)
+                MatchCollection matches = Regex.Matches(stack_trace, @"\(at (.+)\)", RegexOptions.IgnoreCase);
+                foreach (Match match in matches)
                 {
-                    string pathLine = match.Groups[1].Value;
-                    int splitIndex = pathLine.LastIndexOf(":");
-                    if (splitIndex > 0)
+                    string pathline = match.Groups[1].Value.Trim();
+                    if (!pathline.Contains("PJHDebug.cs")) // ✅ PJHDebug.cs 제외
                     {
-                        string path = pathLine.Substring(0, splitIndex);
-                        int lineNumber = Convert.ToInt32(pathLine.Substring(splitIndex + 1));
-                        UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(
-                            path.Replace('/', Path.DirectorySeparatorChar), lineNumber);
-                        return true;
+                        int split_index = pathline.LastIndexOf(":");
+                        if (split_index > 0)
+                        {
+                            string path = pathline.Substring(0, split_index);
+                            line = Convert.ToInt32(pathline.Substring(split_index + 1));
+
+                            string fullpath =
+                                Application.dataPath.Substring(0, Application.dataPath.LastIndexOf("Assets")) + path;
+                            UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(fullpath, line);
+                            return true;
+                        }
                     }
                 }
             }
+
             return false;
         }
 
-        private static string GetStackTrace()
+        static string GetStackTrace()
         {
-            var consoleWindowType = typeof(EditorWindow).Assembly.GetType("UnityEditor.ConsoleWindow");
-            var fieldInfo = consoleWindowType.GetField("ms_ConsoleWindow",
-                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            var consoleInstance = fieldInfo.GetValue(null) as EditorWindow;
-            if (consoleInstance != null && EditorWindow.focusedWindow == consoleInstance)
+            var assembly_unity_editor = Assembly.GetAssembly(typeof(EditorWindow));
+            if (assembly_unity_editor == null) return null;
+
+            var type_console_window = assembly_unity_editor.GetType("UnityEditor.ConsoleWindow");
+            if (type_console_window == null) return null;
+            var field_console_window =
+                type_console_window.GetField("ms_ConsoleWindow", BindingFlags.Static | BindingFlags.NonPublic);
+            if (field_console_window == null) return null;
+            var instance_console_window = field_console_window.GetValue(null);
+            if (instance_console_window == null) return null;
+
+            if ((object)EditorWindow.focusedWindow == instance_console_window)
             {
-                var listViewState = consoleWindowType.GetField("m_ListView",
-                        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                    ?.GetValue(consoleInstance);
-                var rowField = listViewState.GetType().GetField("row",
-                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                int row = (int)rowField.GetValue(listViewState);
-                var activeTextField = consoleWindowType.GetField("m_ActiveText",
-                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                return activeTextField.GetValue(consoleInstance).ToString();
+                var type_list_view_state = assembly_unity_editor.GetType("UnityEditor.ListViewState");
+                if (type_list_view_state == null) return null;
+
+                var field_list_view =
+                    type_console_window.GetField("m_ListView", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (field_list_view == null) return null;
+
+                var value_list_view = field_list_view.GetValue(instance_console_window);
+                if (value_list_view == null) return null;
+
+                var field_active_text =
+                    type_console_window.GetField("m_ActiveText", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (field_active_text == null) return null;
+
+                string value_active_text = field_active_text.GetValue(instance_console_window).ToString();
+                return value_active_text;
             }
 
             return null;
