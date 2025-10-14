@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using PJH.Toolkit.CustomDebug;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
@@ -22,18 +23,18 @@ namespace PJH.Utility.Editor
                 MatchCollection matches = Regex.Matches(stack_trace, @"\(at (.+)\)", RegexOptions.IgnoreCase);
                 foreach (Match match in matches)
                 {
-                    string pathline = match.Groups[1].Value.Trim();
-                    if (!pathline.Contains("PJHDebug.cs")) // ✅ PJHDebug.cs 제외
+                    string pathLine = match.Groups[1].Value.Trim();
+                    if (!pathLine.Contains("PJHDebug.cs")) // ✅ PJHDebug.cs 제외
                     {
-                        int split_index = pathline.LastIndexOf(":");
+                        int split_index = pathLine.LastIndexOf(":");
                         if (split_index > 0)
                         {
-                            string path = pathline.Substring(0, split_index);
-                            line = Convert.ToInt32(pathline.Substring(split_index + 1));
+                            string path = pathLine.Substring(0, split_index);
+                            line = Convert.ToInt32(pathLine.Substring(split_index + 1));
 
-                            string fullpath =
+                            string fullPath =
                                 Application.dataPath.Substring(0, Application.dataPath.LastIndexOf("Assets")) + path;
-                            UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(fullpath, line);
+                            UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(fullPath, line);
                             return true;
                         }
                     }

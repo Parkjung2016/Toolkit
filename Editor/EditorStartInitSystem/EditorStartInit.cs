@@ -1,3 +1,4 @@
+using System.IO;
 using PJH.Utility;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -8,6 +9,7 @@ namespace PJH.Editor
     [InitializeOnLoad]
     public class EditorStartInit
     {
+        private const string editorStartInitSettingFolderPath = "Assets/EditorStartInitSystem/Editor";
         private const string editorStartInitSettingSOFilePath =
             "Assets/EditorStartInitSystem/Editor/EditorStartInitSettingSO.asset";
 
@@ -32,6 +34,10 @@ namespace PJH.Editor
                     AssetDatabase.LoadAssetAtPath<EditorStartInitSettingSO>(editorStartInitSettingSOFilePath);
             else
             {
+                if (!Directory.Exists(editorStartInitSettingFolderPath))
+                {
+                    Directory.CreateDirectory(editorStartInitSettingFolderPath);
+                }
                 EditorStartInitSettingSO editorStartInitSettingInstance =
                     ScriptableObject.CreateInstance<EditorStartInitSettingSO>();
                 AssetDatabase.CreateAsset(editorStartInitSettingInstance, editorStartInitSettingSOFilePath);
@@ -68,12 +74,12 @@ namespace PJH.Editor
                 var pathOfFirstScene = EditorBuildSettings.scenes[0].path;
                 var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(pathOfFirstScene);
                 EditorSceneManager.playModeStartScene = sceneAsset;
-                PJHDebug.Log($"▶ Setup 씬에서 시작: {pathOfFirstScene}");
+                Debug.Log($"▶ Setup 씬에서 시작: {pathOfFirstScene}");
             }
             else
             {
                 EditorSceneManager.playModeStartScene = null;
-                PJHDebug.Log("▶ 현재 씬에서 시작");
+                Debug.Log("▶ 현재 씬에서 시작");
             }
 
             EditorUtility.SetDirty(editorStartInitSetting);

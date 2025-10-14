@@ -2,7 +2,8 @@
     "name": "PJH.Toolkit.Editor",
     "rootNamespace": "PJH.Toolkit.Editor",
     "references": [
-        "GUID:69448af7b92c7f342b298e06a37122aa"
+        "GUID:69448af7b92c7f342b298e06a37122aa",
+        "GUID:3f39a6d33f0017444844360a0bb4abd7"
     ],
     "includePlatforms": [
         "Editor"
