@@ -14,6 +14,7 @@ namespace PJH.Toolkit.Editor
         static bool OnOpenAsset(int instance, int line)
         {
             string name = EditorUtility.InstanceIDToObject(instance).name;
+            Debug.Log(name);
             if (name != nameof(PJHDebug)) return false;
 
             string stackTrace = GetStackTrace();
