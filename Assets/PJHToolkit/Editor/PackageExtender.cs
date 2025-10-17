@@ -7,8 +7,12 @@ namespace PJH.Toolkit.Editor
     [InitializeOnLoad]
     public class PackageExtender : UnityEditor.Editor
     {
+        private const string AddressableName = "com.unity.addressables";
         private const string UnitaskName = "com.cysharp.unitask";
         private const string ImprovedTimerName = "com.gitamend.improvedtimers";
+
+        private const string AddressableUrl =
+            "2.7.4";
 
         private const string UnitaskUrl =
             "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask";
@@ -18,16 +22,22 @@ namespace PJH.Toolkit.Editor
 
         static PackageExtender()
         {
-            bool checkUnitaskInstalled = CheckPackageInstalled(UnitaskName);
-            if (!checkUnitaskInstalled)
+            bool check = CheckPackageInstalled(UnitaskName);
+            if (!check)
             {
                 AddPackage(UnitaskName, UnitaskUrl);
             }
 
-            bool checkImprovedTimerInstalled = CheckPackageInstalled(ImprovedTimerName);
-            if (!checkImprovedTimerInstalled)
+            check = CheckPackageInstalled(ImprovedTimerName);
+            if (!check)
             {
                 AddPackage(ImprovedTimerName, ImprovedTimerUrl);
+            }
+
+            check = CheckPackageInstalled(AddressableName);
+            if (!check)
+            {
+                AddPackage(AddressableName, AddressableUrl);
             }
         }
 
