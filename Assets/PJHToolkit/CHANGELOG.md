@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.5] - 2025-10-17
+
+### Added
+
+- ComponentManager 추가
+
 ## [1.0.4] - 2025-10-17
 
 ### Changed
