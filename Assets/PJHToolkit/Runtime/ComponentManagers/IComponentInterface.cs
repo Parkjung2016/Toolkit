@@ -17,7 +17,7 @@ namespace PJH.Toolkit.PJHToolkit.Runtime.ComponentManagers
     /// <summary>
     /// ComponentOrder 어트리뷰트로 초기화 순서를 지정할 수 있습니다.
     /// </summary>
-    public interface IObjectComponent<in T> where T : MonoBehaviour
+    public interface IObjectComponent<in T> : IObjectComponentBase where T : MonoBehaviour
     {
         public void Initialize(T owner);
     }
