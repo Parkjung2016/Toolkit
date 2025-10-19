@@ -1,43 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PJH.Toolkit.Extensions;
 using UnityEngine;
 
 namespace PJH.Toolkit.PJHToolkit.Runtime.ComponentManagers
 {
- public class ComponentManager<T> where T : MonoBehaviour
+    public class ComponentManager
     {
-        private readonly Dictionary<Type, IObjectComponent<T>> _components = new();
+        private readonly Dictionary<Type, IObjectComponentBase> _components = new();
 
-        public void AddComponentToDictionary(T owner)
+        public void AddComponentToDictionary(MonoBehaviour owner)
         {
-            owner.GetComponentsInChildren<IObjectComponent<T>>(true).ToList().ForEach(component =>
+            var components = owner.GetComponentsInChildren<IObjectComponentBase>(true);
+            var orderedComponentEnumerable = components
+                .OrderBy(c =>
+                {
+                    var attr = c.GetType().GetCustomAttributes(typeof(ComponentOrderAttribute), false)
+                        .FirstOrDefault() as ComponentOrderAttribute;
+                    return attr?.Order ?? 0;
+                });
+
+            foreach (var component in orderedComponentEnumerable)
             {
                 var compType = component.GetType();
                 _components[compType] = component;
-            });
+            }
         }
 
-        public void ComponentInitialize(T owner)
+        public void ComponentInitialize<T>(T owner) where T : MonoBehaviour
         {
-            _components.Values.ToList().ForEach(component =>
+            _components.Values.ForEach(component =>
             {
-                IObjectComponent<T> objectComponent = component;
+                IObjectComponent<T> objectComponent = component as IObjectComponent<T>;
                 objectComponent.Initialize(owner);
             });
         }
 
         public void AfterInitialize()
         {
-            _components.Values.OfType<IAfterInitable>()
-                .ToList().ForEach(afterInitable => afterInitable.AfterInitialize());
+            _components.Values.OfType<IAfterInitable>().ForEach(afterInitable => afterInitable.AfterInitialize());
         }
 
-        public T1 GetCompo<T1>(bool isDerived = false) where T1 : IObjectComponent<T>
+        public T GetCompo<T>(bool isDerived = false) where T : IObjectComponentBase
         {
-            if (_components.TryGetValue(typeof(T1), out var baseComponent))
+            if (_components.TryGetValue(typeof(T), out var baseComponent))
             {
-                if (baseComponent is T1 exactMatch)
+                if (baseComponent is T exactMatch)
                     return exactMatch;
             }
 
@@ -45,9 +54,9 @@ namespace PJH.Toolkit.PJHToolkit.Runtime.ComponentManagers
             {
                 foreach (var kvp in _components)
                 {
-                    if (typeof(T1).IsAssignableFrom(kvp.Key))
+                    if (typeof(T).IsAssignableFrom(kvp.Key))
                     {
-                        if (kvp.Value is T1 derivedMatch)
+                        if (kvp.Value is T derivedMatch)
                             return derivedMatch;
                     }
                 }
@@ -56,7 +65,7 @@ namespace PJH.Toolkit.PJHToolkit.Runtime.ComponentManagers
             return default;
         }
 
-        public bool TryGetCompo<T1>(out T1 compo, bool isDerived = false) where T1 : IObjectComponent<T>
+        public bool TryGetCompo<T1>(out T1 compo, bool isDerived = false) where T1 : IObjectComponentBase
         {
             compo = GetCompo<T1>(isDerived);
             return compo != null;
@@ -64,10 +73,7 @@ namespace PJH.Toolkit.PJHToolkit.Runtime.ComponentManagers
 
         public void EnableComponents(bool isEnabled)
         {
-            _components.Values.OfType<MonoBehaviour>().ToList().ForEach(component =>
-            {
-                component.enabled = isEnabled;
-            });
+            _components.Values.OfType<MonoBehaviour>().ForEach(component => { component.enabled = isEnabled; });
         }
     }
 }

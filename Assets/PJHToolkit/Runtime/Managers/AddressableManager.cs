@@ -26,10 +26,14 @@ namespace PJH.Toolkit.Managers
 
     public static class AddressableManager
     {
+        public delegate void OnResourceLoaded(string key, int loadedCount, int totalCount);
+
+        private static readonly Dictionary<string, LoadedResource> _resourcesByName =
+            new Dictionary<string, LoadedResource>();
+
         public static bool showDebugLog = true;
         public static bool isLoaded;
         public static Action OnLoaded;
-        private static Dictionary<string, LoadedResource> _resourcesByName = new Dictionary<string, LoadedResource>();
 
         #region load reousources
 
@@ -111,7 +115,7 @@ namespace PJH.Toolkit.Managers
         }
 
 
-        public static async UniTask LoadALlAsync<T>(string label, Action<string, int, int> callBack = null)
+        public static async UniTask LoadALlAsync<T>(string label, OnResourceLoaded callBack = null)
             where T : Object
         {
             float timeoutSeconds = 5f;
