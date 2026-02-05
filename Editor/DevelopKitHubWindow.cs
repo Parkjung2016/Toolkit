@@ -6,7 +6,7 @@ using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Skddkkkk.DevelopKit.Editor
+namespace Skddkkkk.DevelopKit.Editors
 {
     public class DevelopKitHubWindow : EditorWindow
     {

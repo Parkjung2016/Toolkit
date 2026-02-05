@@ -1,6 +1,6 @@
 {
-    "name": "Skddkkkk.Developkit.Editor",
-    "rootNamespace": "Skddkkkk.Developkit.Editor",
+    "name": "Skddkkkk.Developkit.Editors",
+    "rootNamespace": "Skddkkkk.Developkit.Editors",
     "references": [],
     "includePlatforms": [
         "Editor"
