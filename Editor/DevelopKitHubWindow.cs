@@ -6,7 +6,7 @@ using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Skddkkkk.DevelopKit.Editors
+namespace PJDev.DevelopKit.Editors
 {
     public class DevelopKitHubWindow : EditorWindow
     {
@@ -28,7 +28,7 @@ namespace Skddkkkk.DevelopKit.Editors
 
         private VisualElement dimmed;
 
-        [MenuItem("Skddkkkk/DevelopKit Hub")]
+        [MenuItem("PJDev/DevelopKit Hub")]
         public static void ShowExample()
         {
             var wnd = GetWindow<DevelopKitHubWindow>();

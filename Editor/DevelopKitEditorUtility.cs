@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace Skddkkkk.DevelopKit.Editors
+namespace PJDev.DevelopKit.Editors
 {
     public static class DevelopKitEditorUtility
     {

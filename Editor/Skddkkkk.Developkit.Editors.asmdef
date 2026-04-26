@@ -1,6 +1,6 @@
 {
-    "name": "Skddkkkk.Developkit.Editors",
-    "rootNamespace": "Skddkkkk.Developkit.Editors",
+    "name": "PJDev.Developkit.Editors",
+    "rootNamespace": "PJDev.Developkit.Editors",
     "references": [],
     "includePlatforms": [
         "Editor"
