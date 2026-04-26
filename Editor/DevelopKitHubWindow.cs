@@ -14,13 +14,13 @@ namespace PJDev.DevelopKit.Editors
             "https://github.com/Parkjung2016/DevelopKit_BasicTemplate.git";
 
         private const string basicTemplatePackageName =
-            "com.skddkkkk.developkit.basictemplate";
+            "com.pjdev.developkit.basictemplate";
 
         private const string frameworkPackageUrl =
             "https://github.com/Parkjung2016/DevelopKit_Framework.git";
 
         private const string frameworkPackageName =
-            "com.skddkkkk.developkit.framework";
+            "com.pjdev.developkit.framework";
 
         private static readonly Vector2 windowSize = new Vector2(500, 500);
 
