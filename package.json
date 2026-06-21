@@ -1,7 +1,7 @@
 {
   "name": "com.pjdev.developkit",
   "displayName": "DevelopKit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "unity": "2021.0",
   "unityRelease": "1f1",
   "description": "Packages for development convenience.",
