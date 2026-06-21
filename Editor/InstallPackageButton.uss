@@ -1,29 +1,39 @@
-.installable > #Background > #Btn_Install:hover {
+.installable > #Background > #ButtonGroup > #Btn_Install:hover {
     background-color: rgb(0, 123, 0);
 }
 
-.installable > #Background > #Btn_Install {
+.installable > #Background > #ButtonGroup > #Btn_Install {
     background-color: rgb(0, 87, 0);
     color: rgb(0, 255, 0);
 }
 
-.installable > #Background > #Btn_Install:active {
+.installable > #Background > #ButtonGroup > #Btn_Install:active {
     background-color: rgb(0, 75, 0);
 }
 
-.removeable > #Background > #Btn_Install:hover {
+.removeable > #Background > #ButtonGroup > #Btn_Install:hover {
     background-color: rgb(123, 0, 0);
 }
 
-.removeable > #Background > #Btn_Install {
+.removeable > #Background > #ButtonGroup > #Btn_Install {
     background-color: rgb(87, 0, 0);
     color: rgb(255, 0, 0);
 }
 
-.removeable > #Background > #Btn_Install:active {
+.removeable > #Background > #ButtonGroup > #Btn_Install:active {
     background-color: rgb(75, 0, 0);
 }
 
+.updatable > #Background > #ButtonGroup > #Btn_Update:hover {
+    background-color: rgb(0, 87, 123);
+}
 
+.updatable > #Background > #ButtonGroup > #Btn_Update {
+    background-color: rgb(0, 61, 87);
+    color: rgb(0, 191, 255);
+}
 
+.updatable > #Background > #ButtonGroup > #Btn_Update:active {
+    background-color: rgb(0, 50, 75);
+}
 
