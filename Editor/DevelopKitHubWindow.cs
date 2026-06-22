@@ -152,37 +152,63 @@ namespace PJDev.DevelopKit.Editors
 
         private static async Task<bool> IsUpdateAvailableAsync(PackageInfo packageInfo, string packageUrl)
         {
-            if (packageInfo?.git == null || string.IsNullOrEmpty(packageInfo.git.hash))
+            if (string.IsNullOrEmpty(packageInfo?.version))
                 return false;
 
-            var latestHash = await FetchLatestGitHubCommitHashAsync(packageUrl);
-            if (string.IsNullOrEmpty(latestHash))
+            var latestVersion = await FetchRemotePackageVersionAsync(packageUrl);
+            if (string.IsNullOrEmpty(latestVersion))
                 return false;
 
-            return !HashesMatch(packageInfo.git.hash, latestHash);
+            return CompareVersions(latestVersion, packageInfo.version) > 0;
         }
 
-        private static bool HashesMatch(string installedHash, string latestHash)
+        private static int CompareVersions(string left, string right)
         {
-            var installed = installedHash.Trim().ToLowerInvariant();
-            var latest = latestHash.Trim().ToLowerInvariant();
-            var length = Math.Min(installed.Length, latest.Length);
-            return string.Compare(
-                       installed,
-                       0,
-                       latest,
-                       0,
-                       length,
-                       StringComparison.Ordinal) == 0;
+            var leftParts = ParseVersion(left);
+            var rightParts = ParseVersion(right);
+
+            for (var i = 0; i < 3; i++)
+            {
+                var cmp = leftParts[i].CompareTo(rightParts[i]);
+                if (cmp != 0)
+                    return cmp;
+            }
+
+            return 0;
         }
 
-        private static async Task<string> FetchLatestGitHubCommitHashAsync(string packageUrl)
+        private static int[] ParseVersion(string version)
         {
-            if (!TryParseGitHubUrl(packageUrl, out var owner, out var repo, out var revision))
+            var core = version.Split('-')[0];
+            var parts = core.Split('.');
+
+            return new[]
+            {
+                parts.Length > 0 && int.TryParse(parts[0], out var major) ? major : 0,
+                parts.Length > 1 && int.TryParse(parts[1], out var minor) ? minor : 0,
+                parts.Length > 2 && int.TryParse(parts[2], out var patch) ? patch : 0,
+            };
+        }
+
+        private static async Task<string> FetchRemotePackageVersionAsync(string packageUrl)
+        {
+            if (!TryParseGitHubUrl(packageUrl, out var owner, out var repo, out var revision, out var packagePath))
                 return null;
 
-            var apiUrl = $"https://api.github.com/repos/{owner}/{repo}/commits/{revision}";
-            using var request = UnityWebRequest.Get(apiUrl);
+            if (revision.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
+            {
+                revision = await FetchDefaultBranchAsync(owner, repo);
+                if (string.IsNullOrEmpty(revision))
+                    return null;
+            }
+
+            var packageJsonPath = string.IsNullOrEmpty(packagePath)
+                ? "package.json"
+                : $"{packagePath.Trim('/')}/package.json";
+            var rawUrl =
+                $"https://raw.githubusercontent.com/{owner}/{repo}/{revision}/{packageJsonPath}";
+
+            using var request = UnityWebRequest.Get(rawUrl);
             request.SetRequestHeader("User-Agent", "DevelopKit-Hub");
 
             var operation = request.SendWebRequest();
@@ -192,11 +218,30 @@ namespace PJDev.DevelopKit.Editors
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning(
-                    $"Failed to check package update from '{apiUrl}': {request.error}");
+                    $"Failed to fetch package version from '{rawUrl}': {request.error}");
                 return null;
             }
 
-            var match = Regex.Match(request.downloadHandler.text, "\"sha\"\\s*:\\s*\"([a-f0-9]+)\"");
+            var match = Regex.Match(request.downloadHandler.text, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+            return match.Success ? match.Groups[1].Value : null;
+        }
+
+        private static async Task<string> FetchDefaultBranchAsync(string owner, string repo)
+        {
+            var apiUrl = $"https://api.github.com/repos/{owner}/{repo}";
+            using var request = UnityWebRequest.Get(apiUrl);
+            request.SetRequestHeader("User-Agent", "DevelopKit-Hub");
+
+            var operation = request.SendWebRequest();
+            while (!operation.isDone)
+                await Task.Yield();
+
+            if (request.result != UnityWebRequest.Result.Success)
+                return null;
+
+            var match = Regex.Match(
+                request.downloadHandler.text,
+                "\"default_branch\"\\s*:\\s*\"([^\"]+)\"");
             return match.Success ? match.Groups[1].Value : null;
         }
 
@@ -204,11 +249,13 @@ namespace PJDev.DevelopKit.Editors
             string packageUrl,
             out string owner,
             out string repo,
-            out string revision)
+            out string revision,
+            out string packagePath)
         {
             owner = null;
             repo = null;
             revision = "HEAD";
+            packagePath = null;
 
             if (string.IsNullOrEmpty(packageUrl))
                 return false;
@@ -230,6 +277,13 @@ namespace PJDev.DevelopKit.Editors
 
             if (!string.IsNullOrEmpty(uri.Fragment))
                 revision = uri.Fragment.TrimStart('#');
+
+            if (!string.IsNullOrEmpty(uri.Query))
+            {
+                var pathMatch = Regex.Match(uri.Query, "[?&]path=([^&]+)");
+                if (pathMatch.Success)
+                    packagePath = Uri.UnescapeDataString(pathMatch.Groups[1].Value);
+            }
 
             return true;
         }
