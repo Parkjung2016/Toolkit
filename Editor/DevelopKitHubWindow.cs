@@ -32,7 +32,7 @@ namespace PJDev.DevelopKit.Editors
 
         private VisualElement dimmed;
 
-        [MenuItem("PJDev/DevelopKit Hub")]
+        [MenuItem("PJDev/DevelopKit Hub", priority = -1000)]
         public static void ShowExample()
         {
             var wnd = GetWindow<DevelopKitHubWindow>();
@@ -192,21 +192,18 @@ namespace PJDev.DevelopKit.Editors
 
         private static async Task<string> FetchRemotePackageVersionAsync(string packageUrl)
         {
-            if (!TryParseGitHubUrl(packageUrl, out var owner, out var repo, out var revision, out var packagePath))
+            if (!TryParseGitHubUrl(packageUrl, out var owner, out var repo, out var gitRef, out var packagePath))
                 return null;
 
-            if (revision.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
-            {
-                revision = await FetchDefaultBranchAsync(owner, repo);
-                if (string.IsNullOrEmpty(revision))
-                    return null;
-            }
+            var commitHash = await FetchCommitHashAsync(owner, repo, gitRef);
+            if (string.IsNullOrEmpty(commitHash))
+                return null;
 
             var packageJsonPath = string.IsNullOrEmpty(packagePath)
                 ? "package.json"
                 : $"{packagePath.Trim('/')}/package.json";
             var rawUrl =
-                $"https://raw.githubusercontent.com/{owner}/{repo}/{revision}/{packageJsonPath}";
+                $"https://raw.githubusercontent.com/{owner}/{repo}/{commitHash}/{packageJsonPath}";
 
             using var request = UnityWebRequest.Get(rawUrl);
             request.SetRequestHeader("User-Agent", "DevelopKit-Hub");
@@ -224,6 +221,54 @@ namespace PJDev.DevelopKit.Editors
 
             var match = Regex.Match(request.downloadHandler.text, "\"version\"\\s*:\\s*\"([^\"]+)\"");
             return match.Success ? match.Groups[1].Value : null;
+        }
+
+        private static async Task<string> FetchCommitHashAsync(string owner, string repo, string gitRef)
+        {
+            if (string.IsNullOrEmpty(gitRef) || gitRef.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
+            {
+                gitRef = await FetchDefaultBranchAsync(owner, repo);
+                if (string.IsNullOrEmpty(gitRef))
+                    return null;
+            }
+
+            if (IsCommitHash(gitRef))
+                return gitRef;
+
+            var apiUrl = $"https://api.github.com/repos/{owner}/{repo}/commits/{gitRef}";
+            using var request = UnityWebRequest.Get(apiUrl);
+            request.SetRequestHeader("User-Agent", "DevelopKit-Hub");
+
+            var operation = request.SendWebRequest();
+            while (!operation.isDone)
+                await Task.Yield();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning(
+                    $"Failed to resolve commit hash for '{owner}/{repo}@{gitRef}': {request.error}");
+                return null;
+            }
+
+            var match = Regex.Match(request.downloadHandler.text, "\"sha\"\\s*:\\s*\"([^\"]+)\"");
+            return match.Success ? match.Groups[1].Value : null;
+        }
+
+        private static bool IsCommitHash(string value)
+        {
+            if (value.Length < 7 || value.Length > 40)
+                return false;
+
+            foreach (var c in value)
+            {
+                var isHex = (c >= '0' && c <= '9') ||
+                            (c >= 'a' && c <= 'f') ||
+                            (c >= 'A' && c <= 'F');
+                if (!isHex)
+                    return false;
+            }
+
+            return true;
         }
 
         private static async Task<string> FetchDefaultBranchAsync(string owner, string repo)
@@ -249,12 +294,12 @@ namespace PJDev.DevelopKit.Editors
             string packageUrl,
             out string owner,
             out string repo,
-            out string revision,
+            out string gitRef,
             out string packagePath)
         {
             owner = null;
             repo = null;
-            revision = "HEAD";
+            gitRef = "HEAD";
             packagePath = null;
 
             if (string.IsNullOrEmpty(packageUrl))
@@ -276,7 +321,7 @@ namespace PJDev.DevelopKit.Editors
                 : parts[1];
 
             if (!string.IsNullOrEmpty(uri.Fragment))
-                revision = uri.Fragment.TrimStart('#');
+                gitRef = uri.Fragment.TrimStart('#');
 
             if (!string.IsNullOrEmpty(uri.Query))
             {
