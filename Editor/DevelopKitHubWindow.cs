@@ -37,6 +37,7 @@ namespace PJDev.DevelopKit.Editors
         [SerializeField] private VisualTreeAsset m_VisualTreeAsset = default;
 
         private VisualElement dimmed;
+        private Label dimmedText;
 
         [MenuItem("PJDev/DevelopKit Hub", priority = -1000)]
         public static void ShowExample()
@@ -55,31 +56,48 @@ namespace PJDev.DevelopKit.Editors
 
         private async Task BuildUIAsync()
         {
-            var installedPackages = await GetInstalledPackages();
-
             var root = rootVisualElement;
+            root.Clear();
+
             var uxml = m_VisualTreeAsset.Instantiate();
             dimmed = uxml.Q("Dimmed");
-            await SetDevelopKitUpdateSectionAsync(installedPackages, uxml.Q("DevelopKit"));
-            await SetPackageSectionAsync(
-                installedPackages,
-                uxml.Q("BasicTemplate"),
-                basicTemplatePackageName,
-                basicTemplatePackageUrl,
-                "Basic Template");
-            await SetPackageSectionAsync(
-                installedPackages,
-                uxml.Q("Framework"),
-                frameworkPackageName,
-                frameworkPackageUrl,
-                "Framework");
-            SetDimmed(false);
+            dimmedText = uxml.Q<Label>("DimmedText");
             root.Add(uxml);
+
+            SetDimmed(true, "로딩 중...");
+
+            try
+            {
+                var installedPackages = await GetInstalledPackages();
+
+                SetDimmed(true, "버전 확인 중...");
+
+                await SetDevelopKitUpdateSectionAsync(installedPackages, uxml.Q("DevelopKit"));
+                await SetPackageSectionAsync(
+                    installedPackages,
+                    uxml.Q("BasicTemplate"),
+                    basicTemplatePackageName,
+                    basicTemplatePackageUrl,
+                    "Basic Template");
+                await SetPackageSectionAsync(
+                    installedPackages,
+                    uxml.Q("Framework"),
+                    frameworkPackageName,
+                    frameworkPackageUrl,
+                    "Framework");
+            }
+            finally
+            {
+                SetDimmed(false);
+            }
         }
 
-        private void SetDimmed(bool isDimmed)
+        private void SetDimmed(bool isDimmed, string message = null)
         {
             dimmed.visible = isDimmed;
+
+            if (!string.IsNullOrEmpty(message) && dimmedText != null)
+                dimmedText.text = message;
         }
 
         private async Task SetDevelopKitUpdateSectionAsync(
@@ -98,7 +116,7 @@ namespace PJDev.DevelopKit.Editors
             var updateBtn = section.Q<Button>("Btn_Update");
             updateBtn.clicked += async () =>
             {
-                SetDimmed(true);
+                SetDimmed(true, "업데이트 중...");
                 try
                 {
                     await UpdatePackageAsync(developKitPackageUrl);
@@ -134,7 +152,7 @@ namespace PJDev.DevelopKit.Editors
                 SetSectionRemoveable(section);
                 btn.clicked += async () =>
                 {
-                    SetDimmed(true);
+                    SetDimmed(true, "제거 중...");
                     try
                     {
                         await RemovePackageAsync(packageName);
@@ -154,7 +172,7 @@ namespace PJDev.DevelopKit.Editors
                     SetSectionUpdatable(section);
                     updateBtn.clicked += async () =>
                     {
-                        SetDimmed(true);
+                        SetDimmed(true, "업데이트 중...");
                         try
                         {
                             await UpdatePackageAsync(packageUrl);
@@ -174,7 +192,7 @@ namespace PJDev.DevelopKit.Editors
                 SetSectionInstallable(section);
                 btn.clicked += async () =>
                 {
-                    SetDimmed(true);
+                    SetDimmed(true, "설치 중...");
                     try
                     {
                         await InstallPackageAsync(packageUrl);
