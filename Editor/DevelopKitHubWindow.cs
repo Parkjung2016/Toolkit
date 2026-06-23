@@ -14,6 +14,12 @@ namespace PJDev.DevelopKit.Editors
 {
     public class DevelopKitHubWindow : EditorWindow
     {
+        private const string developKitPackageUrl =
+            "https://github.com/Parkjung2016/DevelopKit.git";
+
+        private const string developKitPackageName =
+            "com.pjdev.developkit";
+
         private const string basicTemplatePackageUrl =
             "https://github.com/Parkjung2016/DevelopKit_BasicTemplate.git";
 
@@ -54,6 +60,7 @@ namespace PJDev.DevelopKit.Editors
             var root = rootVisualElement;
             var uxml = m_VisualTreeAsset.Instantiate();
             dimmed = uxml.Q("Dimmed");
+            await SetDevelopKitUpdateSectionAsync(installedPackages, uxml.Q("DevelopKit"));
             await SetPackageSectionAsync(
                 installedPackages,
                 uxml.Q("BasicTemplate"),
@@ -73,6 +80,38 @@ namespace PJDev.DevelopKit.Editors
         private void SetDimmed(bool isDimmed)
         {
             dimmed.visible = isDimmed;
+        }
+
+        private async Task SetDevelopKitUpdateSectionAsync(
+            PackageCollection installed,
+            VisualElement section)
+        {
+            section.style.display = DisplayStyle.None;
+
+            var packageInfo = installed.FirstOrDefault(p => p.name == developKitPackageName);
+            if (packageInfo == null)
+                return;
+
+            if (!await IsUpdateAvailableAsync(packageInfo, developKitPackageUrl))
+                return;
+
+            var updateBtn = section.Q<Button>("Btn_Update");
+            updateBtn.clicked += async () =>
+            {
+                SetDimmed(true);
+                try
+                {
+                    await UpdatePackageAsync(developKitPackageUrl);
+                    await BuildUIAsync();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e.Message);
+                    SetDimmed(false);
+                }
+            };
+
+            section.style.display = DisplayStyle.Flex;
         }
 
         private async Task SetPackageSectionAsync(
