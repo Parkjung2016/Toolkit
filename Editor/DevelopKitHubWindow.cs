@@ -1,12 +1,10 @@
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UIElements;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
@@ -14,25 +12,7 @@ namespace PJDev.DevelopKit.Editors
 {
     public class DevelopKitHubWindow : EditorWindow
     {
-        private const string developKitPackageUrl =
-            "https://github.com/Parkjung2016/DevelopKit.git";
-
-        private const string developKitPackageName =
-            "com.pjdev.developkit";
-
-        private const string basicTemplatePackageUrl =
-            "https://github.com/Parkjung2016/DevelopKit_BasicTemplate.git";
-
-        private const string basicTemplatePackageName =
-            "com.pjdev.developkit.basictemplate";
-
-        private const string frameworkPackageUrl =
-            "https://github.com/Parkjung2016/DevelopKit_Framework.git";
-
-        private const string frameworkPackageName =
-            "com.pjdev.developkit.framework";
-
-        private static readonly Vector2 windowSize = new Vector2(500, 500);
+        private static readonly Vector2 WindowSize = new Vector2(500, 500);
 
         [SerializeField] private VisualTreeAsset m_VisualTreeAsset = default;
 
@@ -40,12 +20,12 @@ namespace PJDev.DevelopKit.Editors
         private Label dimmedText;
 
         [MenuItem("PJDev/DevelopKit Hub", priority = -1000)]
-        public static void ShowExample()
+        public static void Open()
         {
-            var wnd = GetWindow<DevelopKitHubWindow>();
-            wnd.titleContent = new GUIContent("DevelopKit Hub");
-            wnd.minSize = windowSize;
-            wnd.maxSize = windowSize + Vector2.one * 0.1f;
+            var window = GetWindow<DevelopKitHubWindow>();
+            window.titleContent = new GUIContent("DevelopKit Hub");
+            window.minSize = WindowSize;
+            window.maxSize = WindowSize + Vector2.one * 0.1f;
         }
 
         public async void CreateGUI()
@@ -56,10 +36,10 @@ namespace PJDev.DevelopKit.Editors
 
         private async Task BuildUIAsync()
         {
-            var root = rootVisualElement;
+            VisualElement root = rootVisualElement;
             root.Clear();
 
-            var uxml = m_VisualTreeAsset.Instantiate();
+            VisualElement uxml = m_VisualTreeAsset.Instantiate();
             dimmed = uxml.Q("Dimmed");
             dimmedText = uxml.Q<Label>("DimmedText");
             root.Add(uxml);
@@ -68,7 +48,7 @@ namespace PJDev.DevelopKit.Editors
 
             try
             {
-                var installedPackages = await GetInstalledPackages();
+                PackageCollection installedPackages = await DevelopKitHubUpdateService.GetInstalledPackagesAsync();
 
                 SetDimmed(true, "버전 확인 중...");
 
@@ -76,14 +56,14 @@ namespace PJDev.DevelopKit.Editors
                 await SetPackageSectionAsync(
                     installedPackages,
                     uxml.Q("BasicTemplate"),
-                    basicTemplatePackageName,
-                    basicTemplatePackageUrl,
+                    DevelopKitHubPackages.BasicTemplateName,
+                    DevelopKitHubPackages.BasicTemplateUrl,
                     "Basic Template");
                 await SetPackageSectionAsync(
                     installedPackages,
                     uxml.Q("Framework"),
-                    frameworkPackageName,
-                    frameworkPackageUrl,
+                    DevelopKitHubPackages.FrameworkName,
+                    DevelopKitHubPackages.FrameworkUrl,
                     "Framework");
             }
             finally
@@ -100,31 +80,29 @@ namespace PJDev.DevelopKit.Editors
                 dimmedText.text = message;
         }
 
-        private async Task SetDevelopKitUpdateSectionAsync(
-            PackageCollection installed,
-            VisualElement section)
+        private async Task SetDevelopKitUpdateSectionAsync(PackageCollection installed, VisualElement section)
         {
             section.style.display = DisplayStyle.None;
 
-            var packageInfo = installed.FirstOrDefault(p => p.name == developKitPackageName);
+            PackageInfo packageInfo = installed.FirstOrDefault(p => p.name == DevelopKitHubPackages.DevelopKitName);
             if (packageInfo == null)
                 return;
 
-            if (!await IsUpdateAvailableAsync(packageInfo, developKitPackageUrl))
+            if (!await DevelopKitHubUpdateService.IsUpdateAvailableAsync(packageInfo, DevelopKitHubPackages.DevelopKitUrl))
                 return;
 
-            var updateBtn = section.Q<Button>("Btn_Update");
+            Button updateBtn = section.Q<Button>("Btn_Update");
             updateBtn.clicked += async () =>
             {
                 SetDimmed(true, "업데이트 중...");
                 try
                 {
-                    await UpdatePackageAsync(developKitPackageUrl);
+                    await UpdatePackageAsync(DevelopKitHubPackages.DevelopKitUrl);
                     await BuildUIAsync();
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    Debug.LogError(e.Message);
+                    Debug.LogError(exception.Message);
                     SetDimmed(false);
                 }
             };
@@ -139,12 +117,12 @@ namespace PJDev.DevelopKit.Editors
             string packageUrl,
             string displayName)
         {
-            var background = section.Q("Background");
-            var btn = background.Q<Button>("Btn_Install");
-            var updateBtn = background.Q<Button>("Btn_Update");
+            VisualElement background = section.Q("Background");
+            Button btn = background.Q<Button>("Btn_Install");
+            Button updateBtn = background.Q<Button>("Btn_Update");
             updateBtn.style.display = DisplayStyle.None;
 
-            var packageInfo = installed.FirstOrDefault(p => p.name == packageName);
+            PackageInfo packageInfo = installed.FirstOrDefault(p => p.name == packageName);
 
             if (packageInfo != null)
             {
@@ -158,14 +136,14 @@ namespace PJDev.DevelopKit.Editors
                         await RemovePackageAsync(packageName);
                         await BuildUIAsync();
                     }
-                    catch (Exception e)
+                    catch (Exception exception)
                     {
-                        Debug.LogError(e.Message);
+                        Debug.LogError(exception.Message);
                         SetDimmed(false);
                     }
                 };
 
-                if (await IsUpdateAvailableAsync(packageInfo, packageUrl))
+                if (await DevelopKitHubUpdateService.IsUpdateAvailableAsync(packageInfo, packageUrl))
                 {
                     updateBtn.text = $"Update {displayName}";
                     updateBtn.style.display = DisplayStyle.Flex;
@@ -178,9 +156,9 @@ namespace PJDev.DevelopKit.Editors
                             await UpdatePackageAsync(packageUrl);
                             await BuildUIAsync();
                         }
-                        catch (Exception e)
+                        catch (Exception exception)
                         {
-                            Debug.LogError(e.Message);
+                            Debug.LogError(exception.Message);
                             SetDimmed(false);
                         }
                     };
@@ -198,196 +176,13 @@ namespace PJDev.DevelopKit.Editors
                         await InstallPackageAsync(packageUrl);
                         await BuildUIAsync();
                     }
-                    catch (Exception e)
+                    catch (Exception exception)
                     {
-                        Debug.LogError(e.Message);
+                        Debug.LogError(exception.Message);
                         SetDimmed(false);
                     }
                 };
             }
-        }
-
-        private static async Task<bool> IsUpdateAvailableAsync(PackageInfo packageInfo, string packageUrl)
-        {
-            if (string.IsNullOrEmpty(packageInfo?.version))
-                return false;
-
-            var latestVersion = await FetchRemotePackageVersionAsync(packageUrl);
-            if (string.IsNullOrEmpty(latestVersion))
-                return false;
-
-            return CompareVersions(latestVersion, packageInfo.version) > 0;
-        }
-
-        private static int CompareVersions(string left, string right)
-        {
-            var leftParts = ParseVersion(left);
-            var rightParts = ParseVersion(right);
-
-            for (var i = 0; i < 3; i++)
-            {
-                var cmp = leftParts[i].CompareTo(rightParts[i]);
-                if (cmp != 0)
-                    return cmp;
-            }
-
-            return 0;
-        }
-
-        private static int[] ParseVersion(string version)
-        {
-            var core = version.Split('-')[0];
-            var parts = core.Split('.');
-
-            return new[]
-            {
-                parts.Length > 0 && int.TryParse(parts[0], out var major) ? major : 0,
-                parts.Length > 1 && int.TryParse(parts[1], out var minor) ? minor : 0,
-                parts.Length > 2 && int.TryParse(parts[2], out var patch) ? patch : 0,
-            };
-        }
-
-        private static async Task<string> FetchRemotePackageVersionAsync(string packageUrl)
-        {
-            if (!TryParseGitHubUrl(packageUrl, out var owner, out var repo, out var gitRef, out var packagePath))
-                return null;
-
-            var commitHash = await FetchCommitHashAsync(owner, repo, gitRef);
-            if (string.IsNullOrEmpty(commitHash))
-                return null;
-
-            var packageJsonPath = string.IsNullOrEmpty(packagePath)
-                ? "package.json"
-                : $"{packagePath.Trim('/')}/package.json";
-            var rawUrl =
-                $"https://raw.githubusercontent.com/{owner}/{repo}/{commitHash}/{packageJsonPath}";
-
-            using var request = UnityWebRequest.Get(rawUrl);
-            request.SetRequestHeader("User-Agent", "DevelopKit-Hub");
-
-            var operation = request.SendWebRequest();
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogWarning(
-                    $"Failed to fetch package version from '{rawUrl}': {request.error}");
-                return null;
-            }
-
-            var match = Regex.Match(request.downloadHandler.text, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-            return match.Success ? match.Groups[1].Value : null;
-        }
-
-        private static async Task<string> FetchCommitHashAsync(string owner, string repo, string gitRef)
-        {
-            if (string.IsNullOrEmpty(gitRef) || gitRef.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
-            {
-                gitRef = await FetchDefaultBranchAsync(owner, repo);
-                if (string.IsNullOrEmpty(gitRef))
-                    return null;
-            }
-
-            if (IsCommitHash(gitRef))
-                return gitRef;
-
-            var apiUrl = $"https://api.github.com/repos/{owner}/{repo}/commits/{gitRef}";
-            using var request = UnityWebRequest.Get(apiUrl);
-            request.SetRequestHeader("User-Agent", "DevelopKit-Hub");
-
-            var operation = request.SendWebRequest();
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogWarning(
-                    $"Failed to resolve commit hash for '{owner}/{repo}@{gitRef}': {request.error}");
-                return null;
-            }
-
-            var match = Regex.Match(request.downloadHandler.text, "\"sha\"\\s*:\\s*\"([^\"]+)\"");
-            return match.Success ? match.Groups[1].Value : null;
-        }
-
-        private static bool IsCommitHash(string value)
-        {
-            if (value.Length < 7 || value.Length > 40)
-                return false;
-
-            foreach (var c in value)
-            {
-                var isHex = (c >= '0' && c <= '9') ||
-                            (c >= 'a' && c <= 'f') ||
-                            (c >= 'A' && c <= 'F');
-                if (!isHex)
-                    return false;
-            }
-
-            return true;
-        }
-
-        private static async Task<string> FetchDefaultBranchAsync(string owner, string repo)
-        {
-            var apiUrl = $"https://api.github.com/repos/{owner}/{repo}";
-            using var request = UnityWebRequest.Get(apiUrl);
-            request.SetRequestHeader("User-Agent", "DevelopKit-Hub");
-
-            var operation = request.SendWebRequest();
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result != UnityWebRequest.Result.Success)
-                return null;
-
-            var match = Regex.Match(
-                request.downloadHandler.text,
-                "\"default_branch\"\\s*:\\s*\"([^\"]+)\"");
-            return match.Success ? match.Groups[1].Value : null;
-        }
-
-        private static bool TryParseGitHubUrl(
-            string packageUrl,
-            out string owner,
-            out string repo,
-            out string gitRef,
-            out string packagePath)
-        {
-            owner = null;
-            repo = null;
-            gitRef = "HEAD";
-            packagePath = null;
-
-            if (string.IsNullOrEmpty(packageUrl))
-                return false;
-
-            if (!Uri.TryCreate(packageUrl, UriKind.Absolute, out var uri))
-                return false;
-
-            if (!uri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase))
-                return false;
-
-            var parts = uri.AbsolutePath.Trim('/').Split('/');
-            if (parts.Length < 2)
-                return false;
-
-            owner = parts[0];
-            repo = parts[1].EndsWith(".git", StringComparison.OrdinalIgnoreCase)
-                ? parts[1][..^4]
-                : parts[1];
-
-            if (!string.IsNullOrEmpty(uri.Fragment))
-                gitRef = uri.Fragment.TrimStart('#');
-
-            if (!string.IsNullOrEmpty(uri.Query))
-            {
-                var pathMatch = Regex.Match(uri.Query, "[?&]path=([^&]+)");
-                if (pathMatch.Success)
-                    packagePath = Uri.UnescapeDataString(pathMatch.Groups[1].Value);
-            }
-
-            return true;
         }
 
         private void SetSectionInstallable(VisualElement section)
@@ -409,74 +204,52 @@ namespace PJDev.DevelopKit.Editors
             section.AddToClassList("updatable");
         }
 
-        private Task InstallPackageAsync(string url) => AddPackageAsync(url);
+        private static Task InstallPackageAsync(string url) => AddPackageAsync(url);
 
-        private Task UpdatePackageAsync(string url) => AddPackageAsync(url);
+        private static Task UpdatePackageAsync(string url) => AddPackageAsync(url);
 
-        private Task AddPackageAsync(string url)
+        private static Task AddPackageAsync(string url)
         {
-            var tcs = new TaskCompletionSource<bool>();
+            var completion = new TaskCompletionSource<bool>();
             AddRequest request = Client.Add(url);
 
-            EditorApplication.update += Progress;
-
             void Progress()
             {
-                if (!request.IsCompleted) return;
+                if (!request.IsCompleted)
+                    return;
 
                 EditorApplication.update -= Progress;
 
                 if (request.Status == StatusCode.Success)
-                    tcs.SetResult(true);
+                    completion.TrySetResult(true);
                 else
-                    tcs.SetException(new Exception(request.Error.message));
+                    completion.TrySetException(new Exception(request.Error.message));
             }
 
-            return tcs.Task;
+            EditorApplication.update += Progress;
+            return completion.Task;
         }
 
-        private Task RemovePackageAsync(string name)
+        private static Task RemovePackageAsync(string name)
         {
-            var tcs = new TaskCompletionSource<bool>();
+            var completion = new TaskCompletionSource<bool>();
             RemoveRequest request = Client.Remove(name);
 
-            EditorApplication.update += Progress;
-
             void Progress()
             {
-                if (!request.IsCompleted) return;
+                if (!request.IsCompleted)
+                    return;
 
                 EditorApplication.update -= Progress;
 
                 if (request.Status == StatusCode.Success)
-                    tcs.SetResult(true);
+                    completion.TrySetResult(true);
                 else
-                    tcs.SetException(new Exception(request.Error.message));
+                    completion.TrySetException(new Exception(request.Error.message));
             }
-
-            return tcs.Task;
-        }
-
-        private async Task<PackageCollection> GetInstalledPackages()
-        {
-            var tcs = new TaskCompletionSource<PackageCollection>();
-            ListRequest request = Client.List(true);
 
             EditorApplication.update += Progress;
-
-            void Progress()
-            {
-                if (!request.IsCompleted) return;
-
-                EditorApplication.update -= Progress;
-
-                if (request.Status == StatusCode.Success)
-                    tcs.SetResult(request.Result);
-                else
-                    tcs.SetException(new Exception(request.Error.message));
-            }
-
-            return await tcs.Task;
+            return completion.Task;
         }
     }
 }
