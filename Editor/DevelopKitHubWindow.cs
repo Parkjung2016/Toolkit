@@ -19,7 +19,7 @@ namespace PJDev.DevelopKit.Editors
         private VisualElement dimmed;
         private Label dimmedText;
 
-        [MenuItem("PJDev/DevelopKit Hub", priority = PJDevMenuPriority.Hub)]
+        [MenuItem("PJDev/DevelopKit Hub", priority = -10000)]
         public static void Open()
         {
             var window = GetWindow<DevelopKitHubWindow>();
